@@ -1,4 +1,4 @@
-# Experiments
+# Models
 
 ## model1.py
 	* Word2vec, no drift detector
@@ -19,3 +19,7 @@
 ## line3.py
 	* Line plot, 2-axis, plot precision and exposure together
 	
+# Simulation
+
+## pipeline.py
+	* Mock code for the simulation experiments

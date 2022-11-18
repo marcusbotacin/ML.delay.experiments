@@ -18,6 +18,12 @@
 
 ## line3.py
 	* Line plot, 2-axis, plot precision and exposure together
+
+## compare_precision.py
+	* Same as line.py, but two arguments
+
+## compare_exposure.py
+	* Same as line2.py, but two arguments
 	
 # Simulation
 

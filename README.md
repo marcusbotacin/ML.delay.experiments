@@ -8,6 +8,12 @@
 	* Same word2vec as model1, but using adaptive RF
 	* why performance is worse?
 
+## model4.py
+	* Dont remember what it does (hahaha)
+
+## model5.py
+	* First version that seems to work and statistics are OK (still no drift detector working)
+
 # Printing
 
 ## line.py

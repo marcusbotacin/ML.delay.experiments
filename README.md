@@ -14,6 +14,13 @@
 ## model5.py
 	* First version that seems to work and statistics are OK (still no drift detector working)
 
+## model7.py
+	* Most complete version so far. Functional and with drift detection
+	* With dataset forced balance.
+	* Gave up using ARF. RF has worked best.
+	* Still need to implement limited retraining, warning
+	* Still to implement the queue
+
 # Printing
 
 ## line.py

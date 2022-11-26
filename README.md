@@ -21,6 +21,9 @@
 	* Still need to implement limited retraining, warning
 	* Still to implement the queue
 
+## model8.py
+	* Same as model7 but with limited view and warning detectors.
+
 # Printing
 
 ## line.py

@@ -32,15 +32,21 @@ class Stats:
         # Either because a given number of samples is not detected 
         # Or because the same set of samples keeps being undetected for a long time
         self.exp = 0
+        self.total = 0
 
     # Call this function at every epoch (day, month, hour, so on)
-    def set_detection(self, FNs):
+    def set_detection(self, FNs, TPs):
             # The current exposure is the one until here plus the new FNs in this epoch
-            self.exp = self.exp + FNs #(should_detect - detected)
+            self.exp = self.exp + FNs 
+            # The total exposure
+            self.total = self.total + FNs + TPs
 
     # Just get the statistics
     def count_exposure(self):
-        return self.exp
+        ratio = 0
+        if self.total != 0:
+            ratio = self.exp / float(self.total)
+        return self.exp, self.total, ratio
 
 #vectorizer class: calc average of words using word2vec
 # I didn't change from Fabricio's implementation
@@ -391,10 +397,13 @@ for epoch in range(len(x_batch_list)):
     CM = confusion_matrix(Y_acc,Y_pred_acc)
     # False negative is the metric that matters, as we want to detect stuff
     FN = CM[1][0]
+    # True Positive is the number of actual malware detected
+    TP = CM[1][1]
     # Add to the statistics. It will accumulate FNs over all days
-    s.set_detection(FN) 
+    s.set_detection(FN, TP) 
     # Print statistics for the current epoch
-    print("%d | [Acc: %3.2f] [Prec: %3.2f] [Rec: %3.2f] [F1: %3.2f] [FPR: %3.2f] [Exp: %d]" % (epoch,100.0*accuracy_score(Y_acc, Y_pred_acc),100.0*precision_score(Y_acc, Y_pred_acc),100.0*recall_score(Y_acc, Y_pred_acc),100.0*f1_score(Y_acc, Y_pred_acc), 100.0*get_metrics(CM), s.count_exposure()))
+    exp, total_exp, ratio = s.count_exposure()
+    print("%d | [Acc: %3.2f] [Prec: %3.2f] [Rec: %3.2f] [F1: %3.2f] [FPR: %3.2f] [Exp: %d] [Texp: %d] [Rexp: %3.2f]" % (epoch,100.0*accuracy_score(Y_acc, Y_pred_acc),100.0*precision_score(Y_acc, Y_pred_acc),100.0*recall_score(Y_acc, Y_pred_acc),100.0*f1_score(Y_acc, Y_pred_acc), 100.0*get_metrics(CM), exp, total_exp, 100*ratio))
     # Print the number of samples classified. Both in total and this epoch
     # Total number does not mean correct ones. For this, print the Confusion Matrix (CM)
     # The idea of printing it here is just to have a fast way to know if it is classifying more goodware or more malware
@@ -403,7 +412,7 @@ for epoch in range(len(x_batch_list)):
     print("\t Total => Malware: %d of %d" % (predict_all.count(1), Y_acc.value_counts()[1]))
     print("\t Total => Goodware: %d of %d" % (predict_all.count(0), Y_acc.value_counts()[0]))
     # Repeat the print but now outputing to log file
-    f2.write("%d," % s.count_exposure())
+    f2.write("%d," % s.count_exposure()[0])
     f.write("%f," % (precision_score(Y_acc, Y_pred_acc)))
 
     # After classifying, check for drift. 

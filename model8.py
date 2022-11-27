@@ -418,6 +418,18 @@ for epoch in range(len(x_batch_list)):
     drift, warning = model.check_drift(y_pred, y_batch_list[epoch])
     # drift has priority
     if drift:
+        # need to merge samples from the last window, before retraining
+        # otherwise, we are losing important samples
+        if len(retrain_X_acc) == 0:
+            retrain_X_acc = pd.DataFrame(x_batch_list[epoch])
+            retrain_Y_acc = pd.DataFrame(y_batch_list[epoch])
+            retrain_Y_pred_acc = pd.DataFrame(y_pred)
+        # if not the first, append, concat
+        else:
+            retrain_X_acc = pd.concat([pd.DataFrame(retrain_X_acc),pd.DataFrame(x_batch_list[epoch])])
+            retrain_Y_acc = pd.concat([pd.DataFrame(retrain_Y_acc),pd.DataFrame(y_batch_list[epoch])])
+            retrain_Y_pred_acc = pd.concat([retrain_Y_pred_acc,pd.DataFrame(y_pred)])
+        # Warn users, start actual handling
         print("!!! Drift Alert !!! [Epoch: %d]" % epoch)
         # if partial view, retrain with limited view vector
         if model.partial_view:

@@ -24,6 +24,9 @@
 ## model8.py
 	* Same as model7 but with limited view and warning detectors.
 
+## model9.py
+	* Same as model8, but now with oracle to delay detection in N epochs.
+
 # Printing
 
 ## line.py

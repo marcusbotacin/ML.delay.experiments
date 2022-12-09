@@ -1,11 +1,10 @@
-# Models
+# Datasets
 
-## simulation.py
-	* Word2vec
-	* Drift warning
-	* Drift detection
-	* Downsampling
-	* Oracle delays
+## Drebin
+	* Can be loaded in memory at once.
+	* Working on it right now
 
-## plot.py
-	* Plot all exposure
+## Androzoo
+	* Too large to fit memory.
+	* Need to rework to load in batches.
+	* To be done.

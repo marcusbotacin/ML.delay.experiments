@@ -16,7 +16,7 @@ font = {
 }
 
 # Trying to generate reproducible figs from the paper, so read from the same file
-files = ["data/no_detection_maximum_exposure.csv", "data/detection_no_drift_no_balance.exp2.csv", "data/detection_no_drift_balance_10.exp2.csv", "data/detection_drift_balance_10_partial_delay20.exp2.csv", "data/detection_drift_10_balance_partial_view.exp2.csv", "data/detection_drift_no_balance.exp2.csv", "data/detection_drift_balance_10.exp2.csv"]
+files = ["summary.data/no_detection_maximum_exposure.csv", "summary.data/detection_no_drift_no_balance.exp2.csv", "summary.data/detection_no_drift_balance_10.exp2.csv", "summary.data/detection_drift_balance_10_partial_delay20.exp2.csv", "summary.data/detection_drift_10_balance_partial_view.exp2.csv", "summary.data/detection_drift_no_balance.exp2.csv", "summary.data/detection_drift_balance_10.exp2.csv"]
 
 # We need to specify labels, in the correct order
 # Let's try to put labels in the exposure order, for easing the reading

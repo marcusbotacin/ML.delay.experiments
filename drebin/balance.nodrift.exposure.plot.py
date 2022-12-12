@@ -16,11 +16,11 @@ font = {
 }
 
 # Trying to generate reproducible figs from the paper, so read from the same file
-files = ["balance.nodrift.data/drift_balance_natural.exp2.csv", "balance.nodrift.data/drift_balance_2.exp2.csv", "balance.nodrift.data/drift_balance_3.exp2.csv","balance.nodrift.data/drift_balance_4.exp2.csv","balance.nodrift.data/drift_balance_5.exp2.csv"]
+files = ["balance.nodrift.data/drift_balance_natural.exp2.csv", "balance.nodrift.data/nodrift_balance_2_thresh70.exp2.csv", "balance.nodrift.data/nodrift_balance_2_thresh80.exp2.csv", "balance.nodrift.data/nodrift_balance_2_thresh90.exp2.csv"]
 
 # We need to specify labels, in the correct order
 # Let's try to put labels in the exposure order, for easing the reading
-labels = ["Natural Balance", "2:1","3:1", "4:1", "5:1"]
+labels = ["Natural Balance", "2:1/70", "2:1/80", "2:1/90"]
 
 def get_arrays(filename):
     data = [x for x in csv.reader(open(filename,'r'))][0]

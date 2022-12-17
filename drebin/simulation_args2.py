@@ -57,13 +57,13 @@ class Stats:
 # Could be a simulator of a dynamic analysis sandbox or human analyst
 # in practice, all it does is to delay label delivery for a given number of epochs
 class Oracle:
-    def __init__(self):
+    def __init__(self, delay_days=0):
         # work as a queue, storing the samples
         self.queue_samples = []
         # count the time passing
         self.queue_time = []
         # How long is the delay
-        self.delay = 20
+        self.delay = delay_days
 
     # Model provides all data, we only store it
     def add(self, samples, predicted, true_labels):
@@ -117,33 +117,50 @@ class MeanEmbeddingVectorizer(object):
 # This is the model. Name according the used techniques
 # The idea is to instantiate multiple of these models to run the simulation
 # I moved Fabricio's implementation from inline to the class
-class Word2vec_RF_DDM:
-    def __init__(self):
+class Word2vec_Model:
+    def __init__(self, drift_id = 0, threshold = 0.5, balance_ratio = 0, partial_view = 0, delay_days=0):
         # The classifier itself
         self.clf = None
         # The features for word2vec or TFIDF
         self.models = []
         # The drift detector
-        self.drift = DDM()
+        if drift_id == 0:
+            self.drift = None
+        if drift_id == 1:
+            self.drift = DDM()
+        if drift_id == 2:
+            self.drift = EDDM()
+        if drift_id == 3:
+            self.drift = ADWIN()
         # Save training set to include it in a future retrain
         self.Xs = []
         self.Ys = []
         # Detection threshold
         # the idea is to adjust to reach the targeted FPR
         # currently, no adjust required, FPR is always below 1%
-        self.threshold = 0.51
+        self.threshold = threshold
         # The fraction of goodware samples in comparison to malware
         # Used to ensure it learns goodware better than malware
         # Thus FPR will always be low, at the cost of the detection rate
-        self.ratio = 10
-        # Set if dataset should be balanced according to the above ratio
-        self.force_balance = True
+        if balance_ratio == 0:
+            self.force_balance = False
+        else:
+            # Set if dataset should be balanced according to the above ratio
+            self.force_balance = True
+            self.ratio = balance_ratio
         # Set if you want to retrain only with the data seem after a warning and not whole dataset
-        self.partial_view = True
+        if partial_view and self.drift_id==3:
+            print("ADWIN do not have partial view")
+            sys.exit(0)
+        else:
+            self.partial_view = [True if partial_view else False]
         # Instantiate oracle to produce labels
         # I integrated oracle to the model, but this was not required in fact
         # Maybe we can change it in the future
-        self.oracle = Oracle()
+        if delay_days == 0:
+            self.oracle = None
+        else:
+            self.oracle = Oracle(delay_days)
         return
 
     # Balance dataset
@@ -237,6 +254,9 @@ class Word2vec_RF_DDM:
     # (in case of partial view)
     # it assumes to have access to the real labels (not true in reality)
     def check_drift(self, y_preds, y_labels):
+        if self.drift is None:
+            return False, False
+
         warning = False
         # This function is invoked every epoch
         # but drift occurs in the samples within the epoch
@@ -360,15 +380,40 @@ def get_metrics(CM):
     # What I'm in fact using
     return FPR
 
+# Parse arguments
+if len(sys.argv) != 10:
+    print("Usage: python script.py <csv file> <split year> <chunk size> <drift id> <threshold> <balance> <partial view> <delay days> <output file basename>")
+    sys.exit(0)
+
+CSV_FILE = sys.argv[1]
+SPLIT_YEAR = sys.argv[2]
+CHUNK_SIZE = int(sys.argv[3])
+DRIFT_ID = int(sys.argv[4])
+THRESHOLD_LEVEL = float(sys.argv[5])
+BALANCE_RATIO = int(sys.argv[6])
+PARTIAL_VIEW = int(sys.argv[7])
+ORACLE_DELAY_DAYS = int(sys.argv[8])
+OUTPUT_BASE_FILE = "%s-%s-%d-%d-%f-%d-%d-%d" % (sys.argv[9],SPLIT_YEAR,CHUNK_SIZE,DRIFT_ID,THRESHOLD_LEVEL,BALANCE_RATIO,PARTIAL_VIEW,ORACLE_DELAY_DAYS)
+
+# No need to evaluate delay if no drift
+if ORACLE_DELAY_DAYS !=0 and DRIFT_ID == 0:
+    print("No delay effect when no drift detector")
+    sys.exit(0)
+
+# No need to evaluate partial if no delay
+if PARTIAL_VIEW != 0 and DRIFT_ID == 0:
+    print("No partial view when no drift detector")
+    sys.exit(0)
+
+
 # Read the input file
 # Datasets are supposed to be ordered by date
 # This is true for drebin and androbin datasets used in previous paper
 # We need to ensure the same for new datasets as well
-CSV_FILE = sys.argv[1]
 data = pd.read_parquet(CSV_FILE)
 # The idea here is to split the whole dataset into training and test data
 # the training are all samples before a given date
-initial_year = "2011-01-01"
+initial_year = "%s-01-01" % SPLIT_YEAR
 data['submission_date'] =  pd.to_datetime(data['submission_date'])
 dataTrain = data[data['submission_date'] <=initial_year]
 y_train = np.array(dataTrain["label"])
@@ -387,7 +432,7 @@ for c in UNUSED_COLUMNS:
 
 # Instantiate a model and train it using the training dataset
 print("Training with [%d] samples to predict [%d] samples" % (dataTrain.shape[0],dataTest.shape[0]))
-model = Word2vec_RF_DDM()
+model = Word2vec_Model(DRIFT_ID, THRESHOLD_LEVEL, BALANCE_RATIO, PARTIAL_VIEW, ORACLE_DELAY_DAYS)
 model.train(dataTrain,y_train)
 # Call predict with the training dataset to measure the actual detection metrics
 y_pred = model.predict(dataTrain)
@@ -395,15 +440,14 @@ CM = confusion_matrix(y_train,y_pred)
 print("Training [Acc: %3.2f] [Prec: %3.2f] [Rec: %3.2f] [F1: %3.2f] [FPR: %3.2f] [Exp: %d]" % (100.0*accuracy_score(y_train,y_pred),100.0*precision_score(y_train,y_pred),100.0*recall_score(y_train,y_pred),100.0*f1_score(y_train,y_pred),100.0*get_metrics(CM),0))
 
 # Split dataset in epochs
-chunk_size = 500
+chunk_size = CHUNK_SIZE
 x_batch_list = split_dataframe(dataTest,chunk_size)
 y_batch_list = split_dataframe(y_test,chunk_size)
 
 # Log files
 # Need to enhance here to log all metrics
 # Using argv as base name to allow running multiple instances in parallel
-f =  open(sys.argv[2]+'.prec.csv','w')
-f2 = open(sys.argv[2]+'.exp2.csv','w')
+f = open(OUTPUT_BASE_FILE+'.exp.csv','w')
 
 # Initial state, everything zeroed/empty
 Y_acc = []          # no real label so far
@@ -456,6 +500,11 @@ for epoch in range(len(x_batch_list)):
     # Print statistics for the current epoch
     exp, total_exp, ratio = s.count_exposure()
     print("%d | [Acc: %3.2f] [Prec: %3.2f] [Rec: %3.2f] [F1: %3.2f] [FPR: %3.2f] [Exp: %d] [Texp: %d] [Rexp: %3.2f]" % (epoch,100.0*accuracy_score(Y_acc, Y_pred_acc),100.0*precision_score(Y_acc, Y_pred_acc),100.0*recall_score(Y_acc, Y_pred_acc),100.0*f1_score(Y_acc, Y_pred_acc), 100.0*get_metrics(CM), exp, total_exp, 100*ratio))
+    
+    if get_metrics(CM) > 0.01:
+        print("Too much FPs!!!")
+        sys.exit(0)
+
     # Print the number of samples classified. Both in total and this epoch
     # Total number does not mean correct ones. For this, print the Confusion Matrix (CM)
     # The idea of printing it here is just to have a fast way to know if it is classifying more goodware or more malware
@@ -464,8 +513,8 @@ for epoch in range(len(x_batch_list)):
     print("\t Total => Malware: %d of %d" % (predict_all.count(1), Y_acc.value_counts()[1]))
     print("\t Total => Goodware: %d of %d" % (predict_all.count(0), Y_acc.value_counts()[0]))
     # Repeat the print but now outputing to log file
-    f2.write("%d," % s.count_exposure()[0])
-    f.write("%f," % (precision_score(Y_acc, Y_pred_acc)))
+    f.write("%d," % s.count_exposure()[0])
+    #f.write("%f," % (precision_score(Y_acc, Y_pred_acc)))
 
     # After classifying, check for drift. 
     # In case of drift, retrain

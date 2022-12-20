@@ -6,6 +6,7 @@
 # Original code: https://www.kaggle.com/datasets/fabriciojoc/fast-furious-malware-data-stream
 
 # Import Block
+import os
 import sys
 import pandas as pd
 import numpy as np
@@ -381,6 +382,7 @@ def get_metrics(CM):
     return FPR
 
 # Parse arguments
+print("You passed: ",sys.argv)
 if len(sys.argv) != 10:
     print("Usage: python script.py <csv file> <split year> <chunk size> <drift id> <threshold> <balance> <partial view> <delay days> <output file basename>")
     sys.exit(0)
@@ -394,6 +396,11 @@ BALANCE_RATIO = int(sys.argv[6])
 PARTIAL_VIEW = int(sys.argv[7])
 ORACLE_DELAY_DAYS = int(sys.argv[8])
 OUTPUT_BASE_FILE = "%s-%s-%d-%d-%f-%d-%d-%d" % (sys.argv[9],SPLIT_YEAR,CHUNK_SIZE,DRIFT_ID,THRESHOLD_LEVEL,BALANCE_RATIO,PARTIAL_VIEW,ORACLE_DELAY_DAYS)
+
+# check if file already exists
+if os.path.exists(OUTPUT_BASE_FILE+".exp.csv"):
+    print("Already computed")
+    sys.exit(0)
 
 # No need to evaluate delay if no drift
 if ORACLE_DELAY_DAYS !=0 and DRIFT_ID == 0:

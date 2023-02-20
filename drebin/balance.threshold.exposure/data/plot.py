@@ -7,12 +7,15 @@ import sys
 # Large fonts, better to read in single column papers
 plt.rcParams['font.family'] = 'Roboto'
 plt.rcParams['font.weight'] = 600
+plt.rcParams['font.size'] = 16
+
 # had to decrease line size to differentiate points when close (is there a better solution?)
-plt.rcParams['lines.markersize'] = 1
+plt.rcParams['lines.markersize'] = 3
 
 font = {
     'family': 'Roboto',
-    'weight': 600
+    'weight': 600,
+    'size': 16
 }
 
 # Trying to generate reproducible figs from the paper, so read from the same file
@@ -47,7 +50,7 @@ plt.ylabel('Exposure (#)', fontdict=font)
 plt.ylim(0,750001)
 plt.xlim(-.5,260)
 plt.yticks(np.arange(0,750001,50000))
-plt.xticks(np.arange(0,260,10))
+plt.xticks(np.arange(0,260,30))
 plt.title('Malware Exposure over time', fontdict=font)
 plt.xlabel('Elapsed Epochs (#)', fontdict=font)
 

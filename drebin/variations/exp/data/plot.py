@@ -49,13 +49,23 @@ fig, ax = plt.subplots(figsize =(10, 5), constrained_layout=True)
 #plt.xticks(rotation=90)
 plt.ylabel('Exposure (#)', fontdict=font)
 #IPython.embed()
-max_X = max(vectors[0][0])+1
-max_Y = max(vectors[0][1])+1
+max_X = max(vectors[0][0])
+X_tics = round(max_X/10)
+max_Y = max(vectors[0][1])
+Y_tics = round(max_Y/10)
+if max_Y % Y_tics < 0.5 * Y_tics:
+    max_Y = max_Y + (max_Y % Y_tics) + Y_tics
+else:
+    max_Y = max_Y + (max_Y % Y_tics)
+if max_X % X_tics < 0.5 * X_tics:
+    max_X = max_X + (max_X % X_tics) + X_tics
+else:
+    max_X = max_X + (max_X % X_tics)
 
 plt.ylim(0,max_Y)
 plt.xlim(-.5,max_X)
-plt.yticks(np.arange(0,max_Y,max_Y/10))
-plt.xticks(np.arange(0,max_X,max_X/10))
+plt.yticks(np.arange(0,max_Y,Y_tics))
+plt.xticks(np.arange(0,max_X,X_tics))
 plt.title('Malware Exposure over time', fontdict=font)
 plt.xlabel('Elapsed Epochs (#)', fontdict=font)
 

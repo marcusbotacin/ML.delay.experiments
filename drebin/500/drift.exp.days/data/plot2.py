@@ -3,7 +3,6 @@ from matplotlib import pyplot as plt
 import numpy as np
 import csv
 import sys
-import IPython
 
 # Large fonts, better to read in single column papers
 plt.rcParams['font.family'] = 'Roboto'
@@ -20,11 +19,11 @@ font = {
 }
 
 # Trying to generate reproducible figs from the paper, so read from the same file
-files = ["nodetection-100.csv", "simple-detection.csv", "delay-400.csv", "delay-200.csv", "drift-partial.csv", "drift.csv"] #, "drift-ideal.csv"]
+files = ["nodetection.csv","best.csv", "ddm_81.csv", "ddm_41.csv", "ddm_1.csv","ddm3.csv"] 
 
 # We need to specify labels, in the correct order
 # Let's try to put labels in the exposure order, for easing the reading
-labels = ["No Detection", "50%/6:1", "50%/6:1 (DDM+400)", "50%/6:1 (DDM+200)", "50%/6:1 (DDM/Partial)", "50%/6:1 (DDM)"] 
+labels = ["No Detection", "50%/6:1", "DDM+81", "DDM+41", "50%/6:1 (DDM/Partial)", "50%/6:1 (DDM)"] 
 
 def get_arrays(filename):
     data = [x for x in csv.reader(open(filename,'r'))][0]
@@ -48,24 +47,10 @@ for i in files:
 fig, ax = plt.subplots(figsize =(10, 5), constrained_layout=True)
 #plt.xticks(rotation=90)
 plt.ylabel('Exposure (#)', fontdict=font)
-#IPython.embed()
-max_X = max(vectors[0][0])
-X_tics = round(max_X/10)
-max_Y = max(vectors[0][1])
-Y_tics = round(max_Y/10)
-if max_Y % Y_tics < 0.5 * Y_tics:
-    max_Y = max_Y + (max_Y % Y_tics) + Y_tics
-else:
-    max_Y = max_Y + (max_Y % Y_tics)
-if max_X % X_tics < 0.5 * X_tics:
-    max_X = max_X + (max_X % X_tics) + X_tics
-else:
-    max_X = max_X + (max_X % X_tics)
-
-plt.ylim(0,max_Y)
-plt.xlim(-.5,max_X)
-plt.yticks(np.arange(0,max_Y,Y_tics))
-plt.xticks(np.arange(0,max_X,X_tics))
+plt.ylim(0,750001)
+plt.xlim(-.5,260)
+plt.yticks(np.arange(0,750001,50000))
+plt.xticks(np.arange(0,260,30))
 plt.title('Malware Exposure over time', fontdict=font)
 plt.xlabel('Elapsed Epochs (#)', fontdict=font)
 
@@ -75,11 +60,11 @@ for i, v in enumerate(vectors):
     # Plot X,Y, and associated labels
     plt.plot(v[0], v[1], label=labels[i], marker='o', linestyle='--') #markersize=1)
 
-plt.legend(loc="upper left")
+plt.legend(loc="upper left",ncol=1)
 plt.grid(axis='both')
 
 plt.tight_layout()
 
 plt.show()
 
-fig.savefig("plot_100.pdf")  
+fig.savefig('plot_500.pdf')  

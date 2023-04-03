@@ -20,11 +20,11 @@ font = {
 }
 
 # Trying to generate reproducible figs from the paper, so read from the same file
-files = ["nodetection-100.csv", "simple-detection.csv", "delay-400.csv", "delay-200.csv", "drift-partial.csv", "drift.csv"] #, "drift-ideal.csv"]
+files = ["nodetection-300.csv", "simple-detection.csv", "delay-150.csv", "delay-130.csv", "drift-partial.csv", "drift.csv" ]
 
 # We need to specify labels, in the correct order
 # Let's try to put labels in the exposure order, for easing the reading
-labels = ["No Detection", "50%/6:1", "50%/6:1 (DDM+400)", "50%/6:1 (DDM+200)", "50%/6:1 (DDM/Partial)", "50%/6:1 (DDM)"] 
+labels = ["No Detection", "50%/6:1", "50%/6:1 (DDM+150)", "50%/6:1 (DDM+130)", "50%/6:1 (DDM/Partial)", "50%/6:1 (DDM)"] #, "50%/6:1 (DDM+60)", "50%/6:1 (DDM+40)", "50%/6:1 (DDM+10)", "50%/6:1 (DDM/Partial)", "50%/6:1 (DDM)"] 
 
 def get_arrays(filename):
     data = [x for x in csv.reader(open(filename,'r'))][0]
@@ -82,4 +82,4 @@ plt.tight_layout()
 
 plt.show()
 
-fig.savefig("plot_100.pdf")  
+fig.savefig("plot_300.pdf")  

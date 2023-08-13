@@ -1,0 +1,71 @@
+import pandas as pd
+from matplotlib import pyplot as plt
+import numpy as np
+import csv
+import sys
+
+# Large fonts, better to read in single column papers
+plt.rcParams['font.family'] = 'Roboto'
+plt.rcParams['font.weight'] = 600
+plt.rcParams['font.size'] = 16
+
+# had to decrease line size to differentiate points when close (is there a better solution?)
+plt.rcParams['lines.markersize'] = 3
+
+font = {
+    'family': 'Roboto',
+    'weight': 600,
+    'size': 16
+}
+
+# Trying to generate reproducible figs from the paper, so read from the same file
+files = ["nodetection.csv","thresh.csv", "delay.csv", "pseudo.csv", "drift.csv"]
+#,"best.csv", "ddm_81.csv", "ddm_61.csv", "ddm_41.csv", "ddm_31.csv", "ddm_21.csv", "ddm_11.csv", "ddm_1.csv","ddm3.csv"] 
+
+# We need to specify labels, in the correct order
+# Let's try to put labels in the exposure order, for easing the reading
+labels = ["No Detection", "50%/6:1", "50%/6:1 (DDM+81/Partial)", "50%/6:1 (Pseudo+81/Partial)", "50%/6:1 (DDM/Partial)"] #, "DDM+81 epochs", "DDM+61 epochs", "DDM+41 epochs","DDM+31 epochs","DDM+21 epochs", "DDM+11 epochs", "DDM+1 epoch", "50%/6:1 (DDM/Partial)"] 
+
+def get_arrays(filename):
+    data = [x for x in csv.reader(open(filename,'r'))][0]
+    data2 = []
+    for x in data:
+        try:
+            # sometimes need to convert data types
+            # in most cases, we do not need this conversion, just return the first array
+            data2.append(int(x))
+        except:
+            pass
+    dataX = [x for x in range(len(data2))]
+    return dataX, data2
+
+vectors = []
+# open each filename and get the exposure rates for each one
+for i in files:
+    vectors.append(get_arrays(i))
+
+# Plot configuration, boring stuff
+fig, ax = plt.subplots(figsize =(10, 5), constrained_layout=True)
+#plt.xticks(rotation=90)
+plt.ylabel('Exposure (#)', fontdict=font)
+plt.ylim(0,11600001)
+plt.xlim(-.5,300)
+plt.yticks(np.arange(0,11600001,1000000))
+plt.xticks(np.arange(0,300,30))
+plt.title('Malware Exposure over time', fontdict=font)
+plt.xlabel('Elapsed Epochs (#)', fontdict=font)
+
+# plot the points previously read from files
+for i, v in enumerate(vectors):
+    # we must ensure all Xs are equals
+    # Plot X,Y, and associated labels
+    plt.plot(v[0], v[1], label=labels[i], marker='o', linestyle='--') #markersize=1)
+
+plt.legend(loc="upper left",ncol=1)
+plt.grid(axis='both')
+
+plt.tight_layout()
+
+plt.show()
+
+fig.savefig('androzoo-sum.pdf')  

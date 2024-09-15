@@ -1,10 +1,13 @@
-# Datasets
+# Label Delays in Malware Detection Pipelines
 
-## Drebin
-	* Can be loaded in memory at once.
-	* Working on it right now
+## Reference
 
-## Androzoo
-	* Too large to fit memory.
-	* Need to rework to load in batches.
-	* To be done.
+* This code was developed for the paper: "Towards more realistic evaluations: The impact of label delays in malware detection pipelines", COSE 2024 - Botacin, Marcus and Gomes, Heitor.
+
+## Obtaining a Dataset
+
+* Download from [HERE](https://www.kaggle.com/datasets/fabriciojoc/fast-furious-malware-data-stream)
+
+## Running
+
+* It is as easy as building the docker and running the simulation file.
